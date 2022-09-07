@@ -1,4 +1,6 @@
+import aiohttp
 import discord
+import io
 import help_commands
 import os
 from discord.ext    import commands
@@ -29,6 +31,14 @@ async def server_validation(ctx):
         return False
     return True
 
+# URL validations
+async def url_validation(ctx, url):
+    if not url.startswith('https'):
+        await ctx.send("Please input a valid URL.")
+        await ctx.message.add_reaction("❌")
+        return False
+    return True
+
 # Events
 @BOT.event
 async def on_ready():
@@ -37,8 +47,44 @@ async def on_ready():
 
 # Help commands
 @BOT.group(name = "banner", invoke_without_command = True)
-async def banners_commands(ctx, option : str = "help"):
+async def banner_cmds(ctx, option : str = "help"):
     if option == "help":
         help_msg = discord.Embed(title = "▬▬ **__BANNER COMMANDS__** ▬▬", colour = 0x970A3D, description = help_commands.BANNER_DESC)
         help_msg.set_footer(text = help_commands.BANNER_HELP)
         await ctx.send(embed = help_msg)
+
+# Commands
+# Get server banner
+@banner_cmds.command(name = "get")
+async def get_banner(ctx):
+    if await server_validation(ctx) == False:
+        return
+
+    await ctx.send(ctx.message.guild.banner_url)
+    await ctx.message.add_reaction("✅")
+
+# Set server banner
+@banner_cmds.command(name = "set")
+async def set_banner(ctx, *args):
+    if await user_validation(ctx) and await server_validation(ctx): 
+        if args[0] == "--random" or "-r": 
+            await set_banner_random(ctx)
+        elif await url_validation(ctx, args[0]): 
+            set_banner_url(ctx, args[0])
+
+# Set random
+async def set_banner_random(ctx):
+    return
+
+# Set with link
+async def set_banner_url(ctx, url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status != 200:                                      # if the response is not OK (200) response code
+                await ctx.send("Failed to download the file.") 
+                await ctx.message.add_reaction("❌")
+                return
+
+            data = io.BytesIO(await response.read())
+            await ctx.message.guild.edit(banner = data.read())
+            await ctx.message.add_reaction("✅")
