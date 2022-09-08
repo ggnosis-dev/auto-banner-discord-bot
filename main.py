@@ -77,18 +77,42 @@ async def set_banner(ctx, *args):
         elif await url_validation(ctx, args[0]): 
             await set_banner_url(ctx, args[0])
 
+# Start banner cycle loop
 @banner_cmds.command(name = "start")
 async def start_banner_cycle(ctx):
     if await user_validation(ctx) and await server_validation(ctx):
+        for task in running_loops:
+            if task.get_name() == "looping":
+                await ctx.send("Server is already cycling through banners.")
+                return
         loop = asyncio.get_running_loop()
         new_loop = loop.create_task(random_banner_loop(ctx), name = "looping")
         running_loops.append(new_loop)
 
+# Stop banner cycle loop
+@banner_cmds.command(name = "stop")
+async def stop_banner_cycle(ctx):
+    if await user_validation(ctx) and await server_validation(ctx):
+        for task in running_loops:
+            if task.get_name() != "looping":
+                continue
+            elif not task.cancelled():
+                try:
+                    task.cancel()
+                    running_loops.remove(task)
+                except asyncio.CancelledError as e:
+                    print(e)
+                    await ctx.message.add_reaction("❌")
+                    return
+                print(f"Looping task has been cancelled")
+                await ctx.message.add_reaction("✅")
+
+# Banner loop 
 async def random_banner_loop(ctx):
     while True:
         await BOT.wait_until_ready()
         print("Bot is ready for banner update.")
-        next_cycle = 10
+        next_cycle = 120
         await set_banner_random(ctx)
         print(f"Banner updated for server: {ctx.message.guild}. Next update in {next_cycle}")
         await asyncio.sleep(next_cycle)
