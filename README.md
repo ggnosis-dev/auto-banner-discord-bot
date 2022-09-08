@@ -18,6 +18,6 @@ Will update this when more progress is done.
  - [x] User permission validations
  - [x] Server Nitro status validations
  - [x] URL validations
- - [ ] Cycle through available banners at given interval
+ - [x] Cycle through available banners at given interval
  - [ ] Allow user to define how long it takes to cycle
- - [ ] Start/Stop functions for cycle
+ - [x] Start/Stop functions for cycle
