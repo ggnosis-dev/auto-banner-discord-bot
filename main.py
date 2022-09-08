@@ -32,7 +32,7 @@ async def server_validation(ctx):
     if ctx.message.guild.premium_tier < 2:
         await ctx.send("This server does not have access to a banner (Need Nitro level 2).")
         await ctx.message.add_reaction("❌")
-        #return False
+        return False
     return True
 
 # URL validations
@@ -62,11 +62,9 @@ async def banner_cmds(ctx, option : str = "help"):
 # Get server banner
 @banner_cmds.command(name = "get")
 async def get_banner(ctx):
-    if await server_validation(ctx) == False:
-        return
-
-    await ctx.send(ctx.message.guild.banner_url)
-    await ctx.message.add_reaction("✅")
+    if await server_validation(ctx):
+        await ctx.send(ctx.message.guild.banner)
+        await ctx.message.add_reaction("✅")
 
 # Set server banner
 @banner_cmds.command(name = "set")
