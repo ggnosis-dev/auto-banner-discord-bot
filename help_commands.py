@@ -9,4 +9,10 @@ Set server banner
     OPTIONS:
     <link> : Set banner to a linked image
     --random | -r : Set to a random image found in server's gallery
+
+Start the banner cycle:
+    .banner start
+
+Stop the banner cycle:
+    .banner stop
 """
