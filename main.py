@@ -69,16 +69,13 @@ async def get_banner(ctx):
 @banner_cmds.command(name = "set")
 async def set_banner(ctx, *args):
     if await user_validation(ctx) and await server_validation(ctx): 
-        if args[0] == "--random" or "-r": 
+        if args[0] == "--random" or args[0] == "-r": 
             await set_banner_random(ctx)
         elif await url_validation(ctx, args[0]): 
-            set_banner_url(ctx, args[0])
+            await set_banner_url(ctx, args[0])
 
 # Set random
 async def set_banner_random(ctx):
-    if await user_validation() and await server_validation():
-        return
-    
     dir = os.path.curdir + "/banners/"
     if not os.path.exists(dir):
         await ctx.send("There is no gallery assigned to your server. Add the folder `banners` to the root of the bot's directory.")
