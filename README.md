@@ -12,9 +12,12 @@ Will update this when more progress is done.
 
  - [x] Get banner from server bot is currently in
  - [x] Set banner for server with URL
- - [ ] Set banner with random gallery
- - [ ] Gallery for storing server banners 
+ - [x] Set banner with random gallery
+ - [x] Gallery for storing server banners 
  - [x] Help command template
  - [x] User permission validations
  - [x] Server Nitro status validations
  - [x] URL validations
+ - [ ] Cycle through available banners at given interval
+ - [ ] Allow user to define how long it takes to cycle
+ - [ ] Start/Stop functions for cycle
