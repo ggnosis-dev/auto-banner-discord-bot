@@ -3,6 +3,7 @@ import discord
 import io
 import help_commands
 import os
+import random
 from discord.ext    import commands
 from dotenv         import load_dotenv
 
@@ -10,14 +11,15 @@ from dotenv         import load_dotenv
 load_dotenv("data/.env")
 TOKEN = os.getenv("TOKEN")      # Your unique Bot Token
 LOCAL_BANNER_PATH = "/banners/"
-BOT = commands.Bot(command_prefix = ".", description = "ggnosis-dev was here")     # change prefix for preference
+INTENTS = discord.Intents.all()
+BOT = commands.Bot(command_prefix = ".", description = "ggnosis-dev was here", intents = INTENTS)     # change prefix for preference
 BOT.remove_command("help")
 
 # User validations
 async def user_validation(ctx):
-    author_perms = ctx.message.author.permissions_in(ctx.channel)
+    author_perms = ctx.message.author.guild_permissions.administrator
     
-    if not author_perms.administrator:
+    if not author_perms:
         await ctx.send("User does not have the required permissions to change the icon. Must have administrator permissions.")
         await ctx.message.add_reaction("❌")
         return False
@@ -74,7 +76,23 @@ async def set_banner(ctx, *args):
 
 # Set random
 async def set_banner_random(ctx):
-    return
+    if await user_validation() and await server_validation():
+        return
+    
+    dir = os.path.curdir + "/banners/"
+    if not os.path.exists(dir):
+        await ctx.send("There is no gallery assigned to your server. Add the folder `banners` to the root of the bot's directory.")
+        return
+    
+    image_file = random.choice(os.listdir(dir))
+    image_path = os.path.join(dir, image_file)
+    with open(image_path, "rb") as data:
+        print(f"Setting banner for server: {ctx.message.guild} to: {image_path}")
+        try:
+            await ctx.message.guild.edit(banner = data.read())
+        except Exception as e:
+            print(e)
+    await ctx.message.add_reaction("✅")
 
 # Set with link
 async def set_banner_url(ctx, url):
@@ -88,3 +106,10 @@ async def set_banner_url(ctx, url):
             data = io.BytesIO(await response.read())
             await ctx.message.guild.edit(banner = data.read())
             await ctx.message.add_reaction("✅")
+
+
+
+
+
+
+BOT.run(TOKEN)
