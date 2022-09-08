@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import discord
 import io
 import help_commands
@@ -14,6 +15,7 @@ LOCAL_BANNER_PATH = "/banners/"
 INTENTS = discord.Intents.all()
 BOT = commands.Bot(command_prefix = ".", description = "ggnosis-dev was here", intents = INTENTS)     # change prefix for preference
 BOT.remove_command("help")
+running_loops = []
 
 # User validations
 async def user_validation(ctx):
@@ -30,10 +32,11 @@ async def server_validation(ctx):
     if ctx.message.guild.premium_tier < 2:
         await ctx.send("This server does not have access to a banner (Need Nitro level 2).")
         await ctx.message.add_reaction("❌")
-        return False
+        #return False
     return True
 
 # URL validations
+# Expand on this
 async def url_validation(ctx, url):
     if not url.startswith('https'):
         await ctx.send("Please input a valid URL.")
@@ -74,6 +77,22 @@ async def set_banner(ctx, *args):
         elif await url_validation(ctx, args[0]): 
             await set_banner_url(ctx, args[0])
 
+@banner_cmds.command(name = "start")
+async def start_banner_cycle(ctx):
+    if await user_validation(ctx) and await server_validation(ctx):
+        loop = asyncio.get_running_loop()
+        new_loop = loop.create_task(random_banner_loop(ctx), name = "looping")
+        running_loops.append(new_loop)
+
+async def random_banner_loop(ctx):
+    while True:
+        await BOT.wait_until_ready()
+        print("Bot is ready for banner update.")
+        next_cycle = 10
+        await set_banner_random(ctx)
+        print(f"Banner updated for server: {ctx.message.guild}. Next update in {next_cycle}")
+        await asyncio.sleep(next_cycle)
+
 # Set random
 async def set_banner_random(ctx):
     dir = os.path.curdir + "/banners/"
@@ -86,7 +105,7 @@ async def set_banner_random(ctx):
     with open(image_path, "rb") as data:
         print(f"Setting banner for server: {ctx.message.guild} to: {image_path}")
         try:
-            await ctx.message.guild.edit(banner = data.read())
+            await ctx.message.guild.edit(icon = data.read())
         except Exception as e:
             print(e)
     await ctx.message.add_reaction("✅")
@@ -101,7 +120,7 @@ async def set_banner_url(ctx, url):
                 return
 
             data = io.BytesIO(await response.read())
-            await ctx.message.guild.edit(banner = data.read())
+            await ctx.message.guild.edit(icon = data.read())
             await ctx.message.add_reaction("✅")
 
 
