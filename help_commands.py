@@ -15,4 +15,11 @@ Start the banner cycle:
 
 Stop the banner cycle:
     .banner stop
+
+Update how long it takes for banner to cycle to the next. NOTE: Discord may limit data transfer if made too frequent, would recommend at least 20 minutes between cycles.
+    .banner timer {<None> | [--set | -s <minutes>]}
+
+    OPTIONS:
+    <None> : Shows the current timer
+    --set | -s <minutes> : Set the timer 
 """

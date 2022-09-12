@@ -16,6 +16,7 @@ INTENTS = discord.Intents.all()
 BOT = commands.Bot(command_prefix = ".", description = "ggnosis-dev was here", intents = INTENTS)     # change prefix for preference
 BOT.remove_command("help")
 running_loops = []
+loop_timer = 20 * 60
 
 # User validations
 async def user_validation(ctx):
@@ -32,7 +33,7 @@ async def server_validation(ctx):
     if ctx.message.guild.premium_tier < 2:
         await ctx.send("This server does not have access to a banner (Need Nitro level 2).")
         await ctx.message.add_reaction("❌")
-        return False
+        #return False
     return True
 
 # URL validations
@@ -101,19 +102,45 @@ async def stop_banner_cycle(ctx):
                 except asyncio.CancelledError as e:
                     print(e)
                     await ctx.message.add_reaction("❌")
+                    await ctx.send("Problem cancelling looped task. Try again or shut down the bot and contact **@ggnosis#8888** for support.")
                     return
                 print(f"Looping task has been cancelled")
                 await ctx.message.add_reaction("✅")
+
+@banner_cmds.command(name = "timer")
+async def set_loop_timer(ctx, *args):
+    global loop_timer
+    if not args:
+        await ctx.send(f"Timer is currently set to cycle in {int(loop_timer / 60)} minute intervals. You can change this by typing `.banner timer --set <number>`.")
+        return
+    if args[0] == "--set" or args[0] == "-s":
+        if len(args) < 2 or int(args[1]) <= 0:
+            await ctx.send("Please provide a number.")
+            await ctx.message.add_reaction("❌")
+            return
+        loop_timer = int(args[1]) * 60
+        #await restart_banner_loop()
+        await ctx.send(f"Timer has been set to cycle in {args[1]} minute intervals.")
+        await ctx.message.add_reaction("✅")
 
 # Banner loop 
 async def random_banner_loop(ctx):
     while True:
         await BOT.wait_until_ready()
         print("Bot is ready for banner update.")
-        next_cycle = 120
+        next_cycle = loop_timer
         await set_banner_random(ctx)
         print(f"Banner updated for server: {ctx.message.guild}. Next update in {next_cycle}")
         await asyncio.sleep(next_cycle)
+
+# Restart banner loop
+async def restart_banner_loop():
+    for task in running_loops:
+        if task.get_name() != "looping":
+            continue
+        elif not task.cancelled():          # if running
+
+            print("Restarted")
 
 # Set random
 async def set_banner_random(ctx):
@@ -144,7 +171,6 @@ async def set_banner_url(ctx, url):
             data = io.BytesIO(await response.read())
             await ctx.message.guild.edit(icon = data.read())
             await ctx.message.add_reaction("✅")
-
 
 
 
