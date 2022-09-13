@@ -11,12 +11,13 @@ from dotenv         import load_dotenv
 # Bot setup
 load_dotenv("data/.env")
 TOKEN = os.getenv("TOKEN")      # Your unique Bot Token
-LOCAL_BANNER_PATH = "/banners/"
+LOCAL_DIR = os.path.curdir + "/banners/"
 INTENTS = discord.Intents.all()
 BOT = commands.Bot(command_prefix = ".", description = "ggnosis-dev was here", intents = INTENTS)     # change prefix for preference
 BOT.remove_command("help")
 running_loops = []
 loop_timer = 20 * 60
+current_index = 0
 
 # User validations
 async def user_validation(ctx):
@@ -102,7 +103,7 @@ async def stop_banner_cycle(ctx):
                 except asyncio.CancelledError as e:
                     print(e)
                     await ctx.message.add_reaction("❌")
-                    await ctx.send("Problem cancelling looped task. Try again or shut down the bot and contact **@ggnosis#8888** for support.")
+                    await ctx.send("Problem cancelling looped task. Try again, restart the bot or contact **@ggnosis#8888** for support.")
                     return
                 print(f"Looping task has been cancelled")
                 await ctx.message.add_reaction("✅")
@@ -123,7 +124,7 @@ async def set_loop_timer(ctx, *args):
         await ctx.send(f"Timer has been set to cycle in {args[1]} minute intervals.")
         await ctx.message.add_reaction("✅")
 
-# Banner loop 
+# Random Banner loop
 async def random_banner_loop(ctx):
     while True:
         await BOT.wait_until_ready()
@@ -142,22 +143,49 @@ async def restart_banner_loop():
 
             print("Restarted")
 
-# Set random
+# Banner images cycle randomly
 async def set_banner_random(ctx):
-    dir = os.path.curdir + "/banners/"
-    if not os.path.exists(dir):
-        await ctx.send("There is no gallery assigned to your server. Add the folder `banners` to the root of the bot's directory.")
-        return
-    
-    image_file = random.choice(os.listdir(dir))
-    image_path = os.path.join(dir, image_file)
+    if check_dir_exists(ctx):
+        global current_index
+        _dir_list = os.listdir(LOCAL_DIR) 
+        _image_file = random.choice(_dir_list)
+        _image_path = os.path.join(LOCAL_DIR, _image_file)
+        current_index = _dir_list.index(_image_file)
+        await set_banner_image(ctx, _image_path)
+
+# Banner images cycle in ascending/descending order 
+async def set_banner_ordered(ctx, asc : bool):
+    if check_dir_exists(ctx):
+        global current_index
+        _dir_list = os.listdir(LOCAL_DIR)
+        _image_path = os.path.join(LOCAL_DIR, _dir_list[current_index])
+
+        if asc and len(_dir_list) < current_index:         # if there are still entries in the directory 
+            current_index += 1
+        elif not asc and len(_dir_list) > current_index:
+            current_index -= 1
+        else:
+            current_index = 0
+        await set_banner_image(ctx, _image_path)
+
+# sets the provided image
+async def set_banner_image(ctx, image_path):
     with open(image_path, "rb") as data:
         print(f"Setting banner for server: {ctx.message.guild} to: {image_path}")
         try:
             await ctx.message.guild.edit(icon = data.read())
         except Exception as e:
             print(e)
+            await ctx.send("Problem setting banner. Try again, restart the bot or contact **@ggnosis#8888** for support.")
+            await ctx.message.add_reaction("❌")
     await ctx.message.add_reaction("✅")
+
+async def check_dir_exists(ctx):
+    if not os.path.exists(LOCAL_DIR):
+        await ctx.send("There is no gallery assigned to your server. Add the folder `banners` to the root of the bot's directory.")
+        await ctx.message.add_reaction("❌")
+        return False
+    return True
 
 # Set with link
 async def set_banner_url(ctx, url):
