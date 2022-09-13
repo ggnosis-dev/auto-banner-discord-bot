@@ -1,6 +1,7 @@
 # Automated Banner Bot for Discord
 
 *Currently a work in progress*
+
 **NOTE:** *Testing is being done with icons. If you're not using a stable version, check for any instances of "icon" and replace it to "banner".*
 
 ## Summary
@@ -20,5 +21,11 @@ Will update this when more progress is done.
  - [x] Server Nitro status validations
  - [x] URL validations
  - [x] Cycle through available banners at given interval
- - [ ] Allow user to define how long it takes to cycle
+ - [x] Allow user to define how long it takes to cycle
  - [x] Start/Stop functions for cycle
+ - [ ] Save custom timer for future use of program
+ - [ ] Restart loop after timer update
+ - [ ] Dedicated restart function
+ - [ ] Check how long until next cycle
+ - [ ] Banner cycle in ascending order
+ - [ ] Banner cycle in descending order
