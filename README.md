@@ -1,6 +1,7 @@
 # Automated Banner Bot for Discord
 
 *Currently a work in progress*
+**NOTE:** *Testing is being done with icons. If you're not using a stable version, check for any instances of "icon" and replace it to "banner".*
 
 ## Summary
 As the name implies, the goal of these scripts is to automate banner features for Discord providing ways to set, get and cycle banners at desired intervals. 
